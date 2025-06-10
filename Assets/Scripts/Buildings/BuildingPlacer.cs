@@ -7,10 +7,10 @@ public class BuildingPlacer : MonoBehaviour
 
     public LayerMask groundLayerMask;
 
-    private GameObject _buildingPrefab;
-    private GameObject _toBuild;
+    protected GameObject _buildingPrefab;
+    protected GameObject _toBuild;
 
-    private Camera _mainCamera;
+    protected Camera _mainCamera;
 
     private void Awake()
     {
@@ -38,14 +38,20 @@ public class BuildingPlacer : MonoBehaviour
             return;
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            _toBuild.transform.Rotate(0f, 0f, 90f);
+        }
+
         Vector2 mouseWorldPos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
 
-        RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero, 0f, groundLayerMask);
+        RaycastHit2D hit = Physics2D.Raycast(mouseWorldPos, Vector2.zero, 1000f, groundLayerMask);
         if (hit.collider != null)
         {
-            _toBuild.SetActive(true);
+            
+
             _toBuild.transform.position = hit.point;
-            Debug.Log($"[BuildingPlacer] Valid ground at {hit.point}");
+            _toBuild.SetActive(true);
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -55,9 +61,11 @@ public class BuildingPlacer : MonoBehaviour
                 {
                     m.SetPlacementMode(PlacementMode.Fixed);
 
-                    _buildingPrefab = null;
+                    //_buildingPrefab = null; //place only once
+
                     _toBuild = null;
-                }               
+                    _PrepareBuilding();
+                }
             }
         }
         else
@@ -69,10 +77,11 @@ public class BuildingPlacer : MonoBehaviour
     public void SetBuildingPrefab(GameObject prefab)
     {
         _buildingPrefab = prefab;
-        PrepareBuilding();
+        _PrepareBuilding();
+        EventSystem.current.SetSelectedGameObject(null); // Deselect any UI elements
     }
 
-    private void PrepareBuilding()
+    protected virtual void _PrepareBuilding()
     {
         if (_toBuild) Destroy(_toBuild);
 
@@ -89,9 +98,9 @@ public class BuildingPlacer : MonoBehaviour
         _toBuild.transform.position = spawnPos;
     }
 
-    private void PlaceBuilding(Vector2 position)
-    {
-        GameObject placed = Instantiate(_buildingPrefab, position, Quaternion.identity);
-        Debug.Log($"[BuildingPlacer] Building placed at {position}");
-    }
+    //private void PlaceBuilding(Vector2 position)
+    //{
+    //    GameObject placed = Instantiate(_buildingPrefab, position, Quaternion.identity);
+        
+    //}
 }
